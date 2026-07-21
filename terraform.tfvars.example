@@ -1,0 +1,7 @@
+# Copy this file to terraform.tfvars and fill in your own values.
+# terraform.tfvars is gitignored so you never commit real values.
+
+aws_region    = "ap-south-1"
+project_name  = "devops-portfolio"
+instance_type = "t2.micro"
+key_name      = "your-ec2-keypair-name"

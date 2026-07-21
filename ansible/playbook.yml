@@ -1,0 +1,56 @@
+---
+- name: Configure app server and deploy containerized application
+  hosts: app_servers
+  become: true
+
+  vars:
+    app_image: "devops-portfolio-app:latest"
+    app_container_name: "devops_portfolio_app"
+
+  tasks:
+    - name: Update all packages
+      dnf:
+        name: "*"
+        state: latest
+
+    - name: Install Docker
+      dnf:
+        name: docker
+        state: present
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: true
+
+    - name: Pull the latest application image
+      community.docker.docker_image:
+        name: "{{ app_image }}"
+        source: pull
+
+    - name: Run the application container
+      community.docker.docker_container:
+        name: "{{ app_container_name }}"
+        image: "{{ app_image }}"
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "80:5000"
+        env:
+          APP_ENV: "production"
+
+    - name: Verify app is responding on health endpoint
+      uri:
+        url: "http://localhost/health"
+        status_code: 200
+      register: health_check
+      retries: 5
+      delay: 5
+      until: health_check.status == 200

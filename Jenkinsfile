@@ -18,8 +18,12 @@ sh 'pip install -r requirements.txt'
         stage('Install Dependencies') {
             steps {
                 dir('app') {
-                    sh 'pip install -r requirements.txt'
-                    sh 'pip install pytest'
+                    sh '''
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
+pip install pytest
+'''
                 }
             }
         }

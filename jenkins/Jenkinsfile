@@ -14,14 +14,16 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                dir('app') {
-                    sh 'python3 -m pip install -r requirements.txt'
-            sh 'python3 -m pip install pytest'
-                }
-            }
+        stage('Run Tests') {
+    steps {
+        dir('app') {
+            sh '''
+            . venv/bin/activate
+            pytest
+            '''
         }
+    }
+}
 
         stage('Run Tests') {
             steps {

@@ -1,7 +1,8 @@
 pipeline {
     agent any
 
-    environment {
+sh 'pip install -r requirements.txt'
+                    sh 'pip install pytest'    environment {
         IMAGE_NAME = "devops-portfolio-app"
         IMAGE_TAG  = "${env.BUILD_NUMBER}"
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')

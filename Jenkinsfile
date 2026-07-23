@@ -1,14 +1,14 @@
 pipeline {
     agent any
 
-sh 'pip install -r requirements.txt'
-                    sh 'pip install pytest'    environment {
+    environment {
         IMAGE_NAME = "devops-portfolio-app"
-        IMAGE_TAG  = "${env.BUILD_NUMBER}"
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -19,12 +19,11 @@ sh 'pip install -r requirements.txt'
             steps {
                 dir('app') {
                     sh '''
-python3 -m venv venv
-. venv/bin/activate
-pip install -r requirements.txt
-pip install pytest
-
-'''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install -r requirements.txt
+                        pip install pytest
+                    '''
                 }
             }
         }
@@ -32,7 +31,10 @@ pip install pytest
         stage('Run Tests') {
             steps {
                 dir('app') {
-                    sh 'pytest test_app.py --junitxml=test-results.xml'
+                    sh '''
+                        . venv/bin/activate
+                        pytest test_app.py --junitxml=test-results.xml
+                    '''
                 }
             }
             post {
@@ -60,8 +62,8 @@ pip install pytest
         stage('Deploy') {
             steps {
                 sh '''
-                    docker-compose -f docker/docker-compose.yml down || true
-                    docker-compose -f docker/docker-compose.yml up -d
+                    docker compose -f docker/docker-compose.yml down || true
+                    docker compose -f docker/docker-compose.yml up -d
                 '''
             }
         }
@@ -69,13 +71,13 @@ pip install pytest
 
     post {
         success {
-            echo "Pipeline completed successfully — build ${IMAGE_TAG} deployed."
+            echo "Pipeline completed successfully."
         }
         failure {
-            echo "Pipeline failed. Check logs above for details."
+            echo "Pipeline failed."
         }
         always {
-            sh 'docker logout'
+            sh 'docker logout || true'
         }
     }
 }
